@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+  <p>Gossip Box is a web based chat service. It's intended to eventually be an open source implementation of Campfire. Right now it's a tech demo.</p>
+  {% if user %}
+  <form id="make-form" method="post">
+  <input type="submit" value="Make Chat Room">    
+  </form>
+  {% else %}
+  <h2 align="center"><a href="{{ login_url }}">Login with Google</a></h2>
+  {% endif %}
+{% endblock %}

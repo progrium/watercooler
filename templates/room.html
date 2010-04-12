@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Gossip Box - {{ room.id }}{% endblock %}
+{% block content %}
+
+<style type="text/css">
+    td.user { text-align: right; font-weight: bold; }
+    td.body { width: 100%; }
+    td.body.SystemMessage, td.body.LeaveMessage, td.body.JoinMessage { font-weight:bold;}
+</style>
+
+<div style="float: right; width: 20%;">
+    <strong>Currently in room:</strong>
+    <ul id="participants">
+        {% for participant in participants %}
+        <li id="participant-{{participant.0}}">{{participant.1}}</li>
+        {% endfor %}
+    </ul>
+    <input type="button" value="Leave Room" onclick="$.ajax({url:'/room/{{room.id}}/leave', type:'post', success:function(){window.location.href='/'}})" />
+</div>
+
+<table style="width: 80%;" id="messages"></table>
+
+<form style="display:block;"><textarea name="body" id="message-body" onkeyup="if(event.keyCode==13){$('#message-body').val('')}" onkeypress="if(event.keyCode==13){$('#message-body').val($.trim($('#message-body').val())); $('form').submit()}" style="width: 300px;"></textarea> <input type="submit" value="Send message" style="vertical-align:top;" /></form>
+
+
+<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"
+			id="CometCatchr" width="0" height="0"
+			codebase="http://fpdownload.macromedia.com/get/flashplayer/current/swflash.cab"> 
+			<param name="movie" value="/static/CometCatchr.swf?callback=receiveMessage&logger=console.log&url=http://204.236.245.56/room/{{room.id}}/live.json" /> 
+			<param name="allowScriptAccess" value="sameDomain" /> 
+			<embed src="/static/CometCatchr.swf?callback=receiveMessage&logger=console.log&url=http://204.236.245.56/room/{{room.id}}/live.json" quality="high"
+				width="0" height="0" name="CometCatchr" align="middle"
+				play="true"
+				loop="false"
+				allowScriptAccess="sameDomain"
+				type="application/x-shockwave-flash"
+				pluginspage="http://www.adobe.com/go/getflashplayer"> 
+			</embed> 
+	</object>
+<script type="text/javascript">
+    var lastUser = null;
+    function receiveMessage(message) {
+        console.log(message);
+        var user = '';
+        if (message['type'] == 'TextMessage') {
+            if (lastUser != message['user']) {
+                user = message['user'];
+            }
+            lastUser = message['user'];
+        }
+        $('#messages').append('<tr><td class="user">'+user+'</td><td class="body '+message['type']+'">'+message['body']+"</td></tr>");
+        if (message['type'] == 'JoinMessage') {
+            $('#participants').append('<li id="participant-'+message['user'].replace(/[@\.]/g, '-')+'">'+message['user']+'</li>');
+        }
+        if (message['type'] == 'LeaveMessage') {
+            $('#participant-'+message['user'].replace(/[@\.]/g, '-')).remove();
+        }
+    }
+    $('form').submit(function() {
+        $.ajax({url:'/room/{{room.id}}/speak', type:'post', data:$(this).serialize()})
+        $('#message-body').val('');
+      return false;
+    });
+</script>
+{% endblock %}
