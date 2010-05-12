@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Gossip Box - {{ room.id }}{% endblock %}
+{% block title %}Water Cooler - {{ room.id }}{% endblock %}
 {% block content %}
 
 <style type="text/css">
@@ -26,9 +26,9 @@
 <object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"
 			id="CometCatchr" width="0" height="0"
 			codebase="http://fpdownload.macromedia.com/get/flashplayer/current/swflash.cab"> 
-			<param name="movie" value="/static/CometCatchr.swf?callback=receiveMessage&logger=console.log&url=http://204.236.245.56/room/{{room.id}}/live.json" /> 
+			<param name="movie" value="/static/CometCatchr.swf?callback=receiveMessage&logger=trace&url=https://{{realtime_server}}/room/{{room.id}}/live.json" /> 
 			<param name="allowScriptAccess" value="sameDomain" /> 
-			<embed src="/static/CometCatchr.swf?callback=receiveMessage&logger=console.log&url=http://204.236.245.56/room/{{room.id}}/live.json" quality="high"
+			<embed src="/static/CometCatchr.swf?callback=receiveMessage&logger=trace&url=https://{{realtime_server}}/room/{{room.id}}/live.json" quality="high"
 				width="0" height="0" name="CometCatchr" align="middle"
 				play="true"
 				loop="false"
@@ -38,9 +38,11 @@
 			</embed> 
 	</object>
 <script type="text/javascript">
+    function trace(s) { try { console.log(s) } catch (e) { } }
+    
     var lastUser = null;
     function receiveMessage(message) {
-        console.log(message);
+        trace(message);
         var user = '';
         if (message['type'] == 'TextMessage') {
             if (lastUser != message['user']) {

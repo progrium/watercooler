@@ -1,19 +1,21 @@
 <html>
   <head>
-    <title>{% block title %}Gossip Box - Open source web-based chat{% endblock %}</title>
+    <title>{% block title %}Water Cooler - Open source web-based chat{% endblock %}</title>
     <link href="/static/style.css" type="text/css" rel="stylesheet" />
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/jquery.min.js"></script>
+    {% block head %}{% endblock %}
   </head>
   <body>
     <div id="wrapper">
       <div id="header">
+          <div style="float:right; text-align: right;">
+                  {% if user %}
+                  {{ user.nickname }} | <a href="{{ logout_url }}">Logout</a>
+                  {% endif %}
+              </div>
         <h1>Gossip Box</h1>
       </div>
-      <div style="width: 100%; text-align: right; margin-top: -20px; ">
-            {% if user %}
-            {{ user.nickname }} | <a href="{{ logout_url }}">Logout</a>
-            {% endif %}
-        </div>
+      
       <div id="content">
           
         {% block content %}{% endblock %}

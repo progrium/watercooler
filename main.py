@@ -5,9 +5,11 @@ from google.appengine.api.labs import taskqueue
 from django.utils import simplejson
 import urllib
 
+#REALTIME_SERVER = '174.129.66.44'
+REALTIME_SERVER = 'localhost.twilio.com'
 
 def pub(path='/', payload=None):
-    return urlfetch.fetch('http://204.236.245.56' + path, method='POST', payload=urllib.urlencode(payload))
+    return urlfetch.fetch('http://%s%s' % (REALTIME_SERVER, path), method='POST', payload=urllib.urlencode(payload))
 
 class Room(db.Model):
     user = db.UserProperty(auto_current_user_add=True)
@@ -64,6 +66,7 @@ class RoomHandler(webapp.RequestHandler):
             room = Room.get_by_id(int(room_id))
             room.join(user)
             participants = map(lambda p: (p.replace('@', '.').replace('.', '-'),p), room.participants)
+            realtime_server = REALTIME_SERVER
             self.response.out.write(template.render('templates/room.html', locals()))
 
 class SpeakHandler(webapp.RequestHandler):
