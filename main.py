@@ -4,12 +4,16 @@ from google.appengine.ext.webapp import util, template
 from google.appengine.api.labs import taskqueue
 from django.utils import simplejson
 import urllib
+import base64
 
-#REALTIME_SERVER = '174.129.66.44'
-REALTIME_SERVER = 'localhost.twilio.com'
+# Make sure you make a keys.py file with these
+from keys import ACCOUNTSID, AUTHTOKEN, REALTIME_SERVER
 
 def pub(path='/', payload=None):
-    return urlfetch.fetch('http://%s%s' % (REALTIME_SERVER, path), method='POST', payload=urllib.urlencode(payload))
+    return urlfetch.fetch('https://%s/watercooler%s' % (REALTIME_SERVER, path), 
+        method='POST', 
+        headers={"Authorization": "Basic "+base64.b64encode('%s:%s' % (ACCOUNTSID, AUTHTOKEN))},
+        payload=urllib.urlencode(payload))
 
 class Room(db.Model):
     user = db.UserProperty(auto_current_user_add=True)

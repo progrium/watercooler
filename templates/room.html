@@ -1,12 +1,52 @@
 {% extends 'base.html' %}
 {% block title %}Water Cooler - {{ room.id }}{% endblock %}
-{% block content %}
-
+{% block head %}
 <style type="text/css">
     td.user { text-align: right; font-weight: bold; }
     td.body { width: 100%; }
     td.body.SystemMessage, td.body.LeaveMessage, td.body.JoinMessage { font-weight:bold;}
 </style>
+<script type="text/javascript" src="/static/swfobject.js"></script>
+<script type="text/javascript">
+    function trace(s) { try { console.log(s) } catch (e) { } }
+    
+    var lastUser = null;
+    function receiveMessage(message) {
+      var user = '';
+      if (message['type'] == 'JoinMessage') { addParticipant(message['user']); }
+      if (message['type'] == 'LeaveMessage') { removeParticipant(message['user']); }
+      if (message['type'] == 'TextMessage') {
+        if (lastUser != message['user']) {
+          user = message['user'];
+        }
+        lastUser = message['user'];
+      }
+      displayMessage(user, message['type'], message['body'])
+    }
+    
+    function displayMessage(user, type, body) {
+      $('#messages').append('<tr><td class="user">'+user+'</td><td class="body '+type+'">'+body+"</td></tr>");
+    }
+    function addParticipant(user) {
+      $('#participants').append('<li id="participant-'+user.replace(/[@\.]/g, '-')+'">'+user+'</li>');
+    }
+    function removeParticipant(user) {
+      $('#participant-'+message['user'].replace(/[@\.]/g, '-')).remove();
+    }
+    
+    $(document).ready(function() {    
+      $('form').submit(function() {
+        $.ajax({url:'/room/{{room.id}}/speak', type:'post', data:$(this).serialize()});
+        $('#message-body').val('');
+        return false;
+      });
+    });
+  
+</script>
+{% endblock %}
+{% block content %}
+
+
 
 <div style="float: right; width: 20%;">
     <strong>Currently in room:</strong>
@@ -23,45 +63,8 @@
 <form style="display:block;"><textarea name="body" id="message-body" onkeyup="if(event.keyCode==13){$('#message-body').val('')}" onkeypress="if(event.keyCode==13){$('#message-body').val($.trim($('#message-body').val())); $('form').submit()}" style="width: 300px;"></textarea> <input type="submit" value="Send message" style="vertical-align:top;" /></form>
 
 
-<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"
-			id="CometCatchr" width="0" height="0"
-			codebase="http://fpdownload.macromedia.com/get/flashplayer/current/swflash.cab"> 
-			<param name="movie" value="/static/CometCatchr.swf?callback=receiveMessage&logger=trace&url=https://{{realtime_server}}/room/{{room.id}}/live.json" /> 
-			<param name="allowScriptAccess" value="sameDomain" /> 
-			<embed src="/static/CometCatchr.swf?callback=receiveMessage&logger=trace&url=https://{{realtime_server}}/room/{{room.id}}/live.json" quality="high"
-				width="0" height="0" name="CometCatchr" align="middle"
-				play="true"
-				loop="false"
-				allowScriptAccess="sameDomain"
-				type="application/x-shockwave-flash"
-				pluginspage="http://www.adobe.com/go/getflashplayer"> 
-			</embed> 
-	</object>
+<div id="cometcatchr"></div>
 <script type="text/javascript">
-    function trace(s) { try { console.log(s) } catch (e) { } }
-    
-    var lastUser = null;
-    function receiveMessage(message) {
-        trace(message);
-        var user = '';
-        if (message['type'] == 'TextMessage') {
-            if (lastUser != message['user']) {
-                user = message['user'];
-            }
-            lastUser = message['user'];
-        }
-        $('#messages').append('<tr><td class="user">'+user+'</td><td class="body '+message['type']+'">'+message['body']+"</td></tr>");
-        if (message['type'] == 'JoinMessage') {
-            $('#participants').append('<li id="participant-'+message['user'].replace(/[@\.]/g, '-')+'">'+message['user']+'</li>');
-        }
-        if (message['type'] == 'LeaveMessage') {
-            $('#participant-'+message['user'].replace(/[@\.]/g, '-')).remove();
-        }
-    }
-    $('form').submit(function() {
-        $.ajax({url:'/room/{{room.id}}/speak', type:'post', data:$(this).serialize()})
-        $('#message-body').val('');
-      return false;
-    });
+swfobject.embedSWF("/static/CometCatchr.swf?url=http://{{realtime_server}}/watercooler/room/{{room.id}}/live.json&callback=receiveMessage&logger=trace", "cometcatchr", "0", "0", '9.0.0');
 </script>
 {% endblock %}
